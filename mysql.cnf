@@ -1,0 +1,43 @@
+[mysqld]
+performance_schema=off
+character-set-server=utf8mb4
+collation-server=utf8mb4_bin
+default-authentication-plugin = mysql_native_password
+
+user                           = mysql
+default-storage-engine         = InnoDB
+socket                         = /var/lib/mysql/mysql.sock
+pid-file                       = /var/lib/mysql/mysql.pid
+
+local-infile=1
+
+key-buffer-size                = 32M
+myisam-recover-options         = FORCE,BACKUP
+
+max-allowed-packet             = 32M
+max-connect-errors             = 1000000
+
+# DATA STORAGE #
+datadir                        = /var/lib/mysql/
+
+# CACHES AND LIMITS #
+tmp-table-size                 = 32M
+max-heap-table-size            = 32M
+max-connections                = 500
+thread-cache-size              = 50
+open-files-limit               = 65535
+table-definition-cache         = 4096
+table-open-cache               = 4096
+
+# INNODB #
+innodb-flush-method            = O_DIRECT
+innodb-log-files-in-group      = 2
+innodb-log-file-size           = 64M
+innodb-flush-log-at-trx-commit = 2
+innodb-file-per-table          = 1
+innodb-buffer-pool-size        = 256M
+
+sql_mode=NO_ENGINE_SUBSTITUTION
+
+[client]
+protocol=tcp

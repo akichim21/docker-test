@@ -1,0 +1,16 @@
+version: "2.3"
+
+services:
+  db:
+    environment:
+      - MYSQL_ROOT_PASSWORD=onlystory
+
+  web:
+    volumes:
+      - docker-test-sync:/app:nocopy
+    stdin_open: true
+    tty: true
+
+volumes:
+  docker-test-sync:
+    external: true

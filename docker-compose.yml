@@ -1,0 +1,76 @@
+version: "2.3"
+
+services:
+  db:
+    hostname: db
+    restart: always
+    image: mysql:5.7
+    ports:
+      - 3306:3306
+    volumes:
+      - ./mysql.cnf:/etc/mysql/conf.d/custom.cnf
+      - /var/lib/mysql
+    mem_limit: 512M
+    cpus: 0.5
+    cap_add:
+      - SYS_NICE # CAP_SYS_NICE
+
+  elasticsearch:
+    restart: always
+    build: ./elasticsearch
+    environment:
+      - discovery.type=single-node
+      - discovery.zen.minimum_master_nodes=1
+      - xpack.security.enabled=false
+      - network.host=0.0.0.0
+      - http.port=9200
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    ports:
+      - 9200:9200
+      - 9300:9300
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 1536M
+    mem_reservation: 1G
+    oom_kill_disable: true
+    cpus: 1
+    healthcheck:
+      test: ["CMD-SHELL", 'curl --silent --fail localhost:9200/_cluster/health || exit 1']
+      interval: 2s
+      timeout: 5s
+      retries: 50
+      start_period: 30s
+
+  web:
+    restart: always
+    build: .
+    working_dir: /app
+    ports:
+      - 3000:3000
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1k"
+        max-file: "3"
+    depends_on:
+      db:
+        condition: service_started
+      elasticsearch:
+        condition: service_healthy
+    env_file:
+      - variables.env
+    cpus: 2
+    mem_limit: 1G
+    mem_reservation: 1G
+    oom_kill_disable: true
+
+volumes:
+  mysql.cnf:
+
+networks:
+  default:
+    external:
+      name: docker-test-network
